@@ -2,6 +2,8 @@
 <html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>빛날내</title><link rel="icon" href="bi.png">
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#4A2A8A"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="빛날내">
 <style>html,body{margin:0;background:#F5F3F9;color:#33175A;font-family:"Noto Sans KR",-apple-system,BlinkMacSystemFont,sans-serif}
 #ld{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px 16px;box-sizing:border-box;text-align:center}
 #ld img{height:60px;width:auto;max-width:70%}#ld p{font-size:19px;font-weight:700;line-height:1.6;margin:0}
@@ -17,6 +19,10 @@
 /* 빛날내 로더(GitHub의 index.html) — 이 파일은 바꾸지 않아도 됩니다.
    화면(공유페이지·관리자 앱)은 구글 앱(config.js의 API_URL)에서 받아 휴대폰에 저장해 두고 씀(판이 바뀌면 화면이 알아서 새로 받음).
    주소 뒤 ?admin = 관리자 앱, ?reload = 저장해 둔 화면 지우고 새로 받기 */
+/* 앱 설치(홈 화면·바탕화면 아이콘): 설치 창 신호를 받아 두면 관리자 앱 「기록·설정 → 설치하기」가 씀 */
+window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); window.__bnInstallEvt = e; try { window.dispatchEvent(new Event("bn-install-ready")); } catch (x) {} });
+window.addEventListener("appinstalled", function () { window.__bnInstalled = 1; window.__bnInstallEvt = null; });
+if ("serviceWorker" in navigator) { try { navigator.serviceWorker.register("sw.js").catch(function () {}); } catch (e) {} }
 (function () {
   var W = window.BN_WEB || {}, API = String(W.API_URL || ""), q = location.search;
   function g(st, k) { try { return st.getItem(k); } catch (e) { return null; } }
@@ -28,9 +34,15 @@
   function cached(p) { try { var c = JSON.parse(g(localStorage, "bnPage_" + p) || "null"); return c && c.h ? c : null; } catch (e) { return null; } }
   function boot(p, c) {
     window.__BN_LOADER = { page: p, v: c.v, ver: 1 };
-    var go = function () { setTimeout(function () { document.open(); document.write(c.h); document.close(); }, 0); };
+    var go = function () { setTimeout(function () { document.open(); document.write(c.h); document.close(); headTags(); }, 0); };
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go); else go();
   }
+  function headTags() { /* 새로 쓴 화면에도 앱 설치 정보 다시 붙이기 */
+    try { var h = document.head || document.getElementsByTagName("head")[0]; if (!h) return;
+      [["link", { rel: "manifest", href: "manifest.webmanifest" }], ["link", { rel: "apple-touch-icon", href: "apple-touch-icon.png" }], ["meta", { name: "theme-color", content: "#4A2A8A" }], ["meta", { name: "apple-mobile-web-app-capable", content: "yes" }], ["meta", { name: "apple-mobile-web-app-title", content: "빛날내" }]].forEach(function (t) {
+        if (t[0] === "link" && document.querySelector('link[rel="' + t[1].rel + '"]')) return;
+        var el = document.createElement(t[0]); for (var k in t[1]) el.setAttribute(k, t[1][k]); h.appendChild(el); });
+    } catch (e) {} }
   function show(t, retry) {
     var d = document.getElementById("ld"); d.innerHTML = '<img src="bi.png" alt="빛날내"><p>' + t + '</p>';
     if (retry) { var b = document.createElement("button"); b.textContent = "다시 해 보기"; b.onclick = function () { location.reload(); }; d.appendChild(b); }
