@@ -1,6 +1,7 @@
 /* 빛날내 앱 설치용 — 화면 파일(같은 주소)만 인터넷 우선, 끊기면 저장본. 매출·재고 자료(구글 앱)는 건드리지 않음
+ * 2026-11-12 15:40: 알림 왼쪽 동그라미에 華川 모양(badge-96.png, 투명 바탕 흰 글자 — 안드로이드는 이 칸을 한 가지 색 모양으로만 그림)
  * 2026-11-12: 휴대폰 알림(웹 푸시) — 장터시스템 화면이 닫혀 있어도 새 글이 오면 상단바 알림. 누르면 그 화면으로 */
-const C = "bn-shell-2";
+const C = "bn-shell-3";
 self.addEventListener("install", e => { self.skipWaiting(); e.waitUntil(caches.open(C).then(c => c.addAll(["./", "config.js", "bi.png", "icon-192.png"])).catch(() => {})); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(k => Promise.all(k.filter(x => x !== C).map(x => caches.delete(x)))).then(() => self.clients.claim())); });
 self.addEventListener("fetch", e => {
@@ -26,7 +27,7 @@ self.addEventListener("push", e => {
     if (seen && !d.test) { seen.postMessage({ bnPushSeen: { k } }); return; }
     return self.registration.showNotification(title, {
       body: d.b || "", tag: d.n ? "bn" + d.n : undefined, renotify: false,
-      icon: base + "icon-192.png", badge: base + "icon-192.png", lang: "ko",
+      icon: base + "icon-192.png", badge: base + "badge-96.png", lang: "ko",
       vibrate: [180, 80, 180], timestamp: d.at || Date.now(),
       data: { k, url: base + "?n=" + k }
     });
